@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Crypto Real-Time Monitor</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Lexend+Mega&display=swap"
+  rel="stylesheet"
+/>
+
+</head>
+<body>
+
+  <!-- BTC -->
+  <div class="card">
+    <div class="card-header">
+      <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=002" alt="BTC icon">
+      <span class="symbol">BTCUSD</span>
+    </div>
+    <div class="price" id="btc-price">-</div>
+    <div class="change" id="btc-change">-</div>
+  </div>
+
+  <!-- ETH -->
+  <div class="card">
+    <div class="card-header">
+      <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=002" alt="ETH icon">
+      <span class="symbol">ETHUSD</span>
+    </div>
+    <div class="price" id="eth-price">-</div>
+    <div class="change" id="eth-change">-</div>
+  </div>
+
+  <!-- SHIB -->
+  <div class="card">
+    <div class="card-header">
+      <img src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png?v=040" alt="SHIB icon">
+      <span class="symbol">SHIBUSD</span>
+    </div>
+    <div class="price" id="shib-price">-</div>
+    <div class="change" id="shib-change">-</div>
+  </div>
+
+  <!-- BONE (poll da CoinGecko) -->
+  <div class="card">
+    <div class="card-header">
+      <!-- se non trovi un’icona specifica su cryptoicons.org,
+           puoi usare un link custom, ad esempio: -->
+      <img src="https://cryptologos.cc/logos/bone-shibaswap-bone-logo.png" 
+           alt="BONE icon" onerror="this.onerror=null; this.src='https://cryptoicons.org/api/icon/generic/32';">
+      <span class="symbol">BONEUSD</span>
+    </div>
+    <div class="price" id="bone-price">-</div>
+    <div class="change" id="bone-change">-</div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

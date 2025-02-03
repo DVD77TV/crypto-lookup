@@ -1,0 +1,100 @@
+body {
+  margin: 0;  
+  font-family: 'Lexend Mega', sans-serif;
+  background-color: #1E1E1E;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.6em;
+}
+
+h1 {
+  margin: 20px 0;
+}
+
+.card {
+  background-color: #2D2D2D;
+  border-radius: 5px;
+  width: 280px;
+  padding: 15px;
+  margin: 10px;
+  text-align: center;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.card-header img {
+  max-width: 40px;
+}
+
+.card-header img {
+  margin-right: 10px;
+}
+
+.symbol {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.exchange {
+  color: #999;
+  font-size: 0.9em;
+}
+
+.price {
+  font-size: 1.8em;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.change {
+  font-size: 1em;
+  margin-top: 5px;
+}
+.txtUSD {
+  font-size: 0.8em; /* più piccolo rispetto al prezzo */
+  color: #f5f5f5;   /* oppure #999, #ccc, ecc. */
+  opacity: 0.8;     /* se vuoi un effetto leggermente attenuato */
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Layout predefinito (verticale): le card si impilano come già succede. */
+/* ...il tuo CSS attuale rimane invariato qui... */
+
+/* Layout orizzontale (landscape): 2 card in alto e 2 in basso, fullscreen */
+@media (orientation: landscape) {
+  body {
+    display: grid;
+    grid-template-rows: 1fr 1fr;   /* 2 righe */
+    grid-template-columns: 1fr 1fr;/* 2 colonne */
+    gap: 0;                       /* Nessuno spazio tra le card, occupano tutto */
+  }
+
+  /* Rimuovo i margini delle card per estenderle a tutto schermo */
+  .card {
+    margin: 0;
+    border-radius: 0;
+    /* Centra i contenuti all’interno di ogni "cella" */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 88%;
+    height: 80%;
+    margin-left: 3%;
+    margin-bottom: 3%;
+    margin-right: 0;
+  }
+}
