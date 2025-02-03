@@ -68,6 +68,7 @@ binanceWS.onclose = () => {
 **************************************************/
 async function fetchBonePrice() {
   try {
+    // CoinGecko ID per BONE
     const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bone-shibaswap&vs_currencies=usd&include_24hr_change=true';
     const resp = await fetch(url);
     const data = await resp.json();
@@ -79,17 +80,18 @@ async function fetchBonePrice() {
       const priceDOM = document.getElementById('bone-price');
       const changeDOM = document.getElementById('bone-change');
 
-      // Usa 'price' anziché 'currentPrice'
-      const formattedPrice = price.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 8
-      });
-      priceDOM.innerHTML = formattedPrice + ' <span class="txtUSD">USD</span>';
+      // Formattazione
+      const formattedPrice = currentPrice.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 8
+        });
+        // Attenzione: .innerHTML permette di interpretare l’HTML
+        priceDOM.innerHTML = formattedPrice + ' <span class="txtUSD">USD</span>';
+
 
       const sign = change >= 0 ? '+' : '';
       const color = change >= 0 ? '#3AE374' : '#FF4E4E';
       changeDOM.textContent = sign + change.toFixed(2) + '%';
-
       priceDOM.style.color = color;
       changeDOM.style.color = color;
     }
@@ -97,3 +99,7 @@ async function fetchBonePrice() {
     console.error('Errore fetch prezzo BONE:', error);
   }
 }
+
+// Aggiorno BONE a intervalli regolari (es. ogni 30 secondi)
+fetchBonePrice();
+setInterval(fetchBonePrice, 30000);
