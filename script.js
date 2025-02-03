@@ -64,41 +64,70 @@ binanceWS.onclose = () => {
 };
 
 /*************************************************
-  POLLING PER BONE DA COINGECKO
+  WEBSOCKET PER BONE DA MEXC
 **************************************************/
-async function fetchBonePrice() {
+const wsMEXC = new WebSocket('wss://wbs.mexc.com/raw');
+
+wsMEXC.onopen = () => {
+  console.log('MEXC WebSocket aperto');
+  // Sottoscrizione al ticker di BONE/USDT
+  const subMessage = {
+    op: 'sub',
+    cmd: 'spot/ticker',
+    args: ['BONE_USDT']
+  };
+  wsMEXC.send(JSON.stringify(subMessage));
+};
+
+wsMEXC.onmessage = (event) => {
   try {
-    // CoinGecko ID per BONE
-    const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bone-shibaswap&vs_currencies=usd&include_24hr_change=true';
-    const resp = await fetch(url);
-    const data = await resp.json();
+    const msg = JSON.parse(event.data);
+    // Cerchiamo i dati nel campo `data`, che dovrebbe essere un array di array
+    if (msg && msg.cmd === 'spot/ticker' && Array.isArray(msg.data) && msg.data.length > 0) {
+      // Tipicamente msg.data[0] contiene l’array con info su BONE
+      const tickerData = msg.data[0];
+      // Secondo la doc MEXC (spot/ticker):
+      // tickerData = [
+      //   symbol, lastPrice, open, high, low, volume, amount,
+      //   ask1, ask1Qty, bid1, bid1Qty, time, changeRate, changePrice
+      // ]
+      // Verifica l’esatto ordine/collocazione nel JSON reale!
+      const lastPrice   = parseFloat(tickerData[1]);   // tickerData[1] = lastPrice
+      const changeRate  = parseFloat(tickerData[12]) * 100; // tickerData[12] = changeRate in decimale (es. 0.02 => 2%)
 
-    if (data['bone-shibaswap']) {
-      const price = data['bone-shibaswap'].usd;
-      const change = data['bone-shibaswap'].usd_24h_change;
-
-      const priceDOM = document.getElementById('bone-price');
+      // Aggiorniamo i due elementi HTML
+      const priceDOM  = document.getElementById('bone-price');
       const changeDOM = document.getElementById('bone-change');
 
-      // Formattazione
-      const formattedPrice = currentPrice.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 8
-        });
-        // Attenzione: .innerHTML permette di interpretare l’HTML
-        priceDOM.innerHTML = formattedPrice + ' <span class="txtUSD">USD</span>';
+      // Stampiamo il prezzo con il suffisso “USD” in uno span stilizzabile
+      priceDOM.innerHTML = lastPrice.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 8
+      }) + ' <span class="txtUSD">USD</span>';
 
+      // Gestiamo il segno (+ / -) per la variazione
+      const sign = changeRate >= 0 ? '+' : '';
+      changeDOM.textContent = sign + changeRate.toFixed(2) + '%';
 
-      const sign = change >= 0 ? '+' : '';
-      const color = change >= 0 ? '#3AE374' : '#FF4E4E';
-      changeDOM.textContent = sign + change.toFixed(2) + '%';
-      priceDOM.style.color = color;
+      // Cambiamo colore in base al segno
+      const color = (changeRate >= 0) ? '#3AE374' : '#FF4E4E';
+      priceDOM.style.color  = color;
       changeDOM.style.color = color;
     }
-  } catch (error) {
-    console.error('Errore fetch prezzo BONE:', error);
+  } catch (err) {
+    console.error('MEXC WebSocket parse error:', err);
   }
-}
+};
+
+wsMEXC.onerror = (error) => {
+  console.error('MEXC WebSocket error:', error);
+};
+
+wsMEXC.onclose = () => {
+  console.warn('MEXC WebSocket chiuso');
+  // Se vuoi riconnetterti automaticamente in caso di chiusura inaspettata:
+  // setTimeout(() => { /* ricrea wsMEXC */ }, 5000);
+};
 
 // Aggiorno BONE a intervalli regolari (es. ogni 5 secondi)
 fetchBonePrice();
