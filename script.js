@@ -1,120 +1,105 @@
 /*************************************************
-  1. WEBSOCKET PER BTC, ETH, SHIB DA BINANCE
+  WEBSOCKET PER BTC, ETH, SHIB DA BINANCE
 **************************************************/
-const binanceStreamURL =
-  "wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/shibusdt@ticker";
+const binanceStreamURL = 'wss://stream.binance.com:9443/stream?streams=' +
+                         'btcusdt@ticker/ethusdt@ticker/shibusdt@ticker';
 
+// Mappa simboli usati da Binance WS => ID elementi
 const binanceSymbols = {
-  BTCUSDT: { priceEl: "btc-price", changeEl: "btc-change" },
-  ETHUSDT: { priceEl: "eth-price", changeEl: "eth-change" },
-  SHIBUSDT: { priceEl: "shib-price", changeEl: "shib-change" },
+  'BTCUSDT': { priceEl: 'btc-price', changeEl: 'btc-change' },
+  'ETHUSDT': { priceEl: 'eth-price', changeEl: 'eth-change' },
+  'SHIBUSDT': { priceEl: 'shib-price', changeEl: 'shib-change' }
 };
 
 const binanceWS = new WebSocket(binanceStreamURL);
 
 binanceWS.onopen = () => {
-  console.log("Binance WebSocket aperto.");
+  console.log('WebSocket Binance aperto con successo');
 };
 
 binanceWS.onmessage = (event) => {
   try {
     const msg = JSON.parse(event.data);
-    // "data" contiene le info di un singolo stream 24h ticker
+    // "data" contiene le info di un singolo stream (ticker 24h)
     const ticker = msg.data;
     if (!ticker || !ticker.s) return;
 
-    const symbol = ticker.s;
+    const symbol = ticker.s; // es: "BTCUSDT"
     if (!binanceSymbols[symbol]) return;
 
     const { priceEl, changeEl } = binanceSymbols[symbol];
     const priceDOM = document.getElementById(priceEl);
     const changeDOM = document.getElementById(changeEl);
 
-    const currentPrice = parseFloat(ticker.c);
-    const priceChangePercent = parseFloat(ticker.P);
+    const currentPrice = parseFloat(ticker.c);   // prezzo attuale
+    const priceChangePercent = parseFloat(ticker.P); // variazione % 24h
 
-    // Inseriamo prezzo con HTML (così lo stile "USD" può essere differenziato)
-    priceDOM.innerHTML =
-      currentPrice.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 8,
-      }) + ' <span class="txtUSD">USD</span>';
+    // Aggiorno il DOM
+    const formattedPrice = currentPrice.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 8
+    });
+    // Attenzione: .innerHTML permette di interpretare l’HTML
+    priceDOM.innerHTML = formattedPrice + ' <span class="txtUSD">USD</span>';
 
-    const sign = priceChangePercent >= 0 ? "+" : "";
-    changeDOM.textContent = sign + priceChangePercent.toFixed(2) + "%";
 
-    const color = priceChangePercent >= 0 ? "#3AE374" : "#FF4E4E";
+    let sign = priceChangePercent > 0 ? '+' : '';
+    changeDOM.textContent = sign + priceChangePercent.toFixed(2) + '%';
+
+    const color = priceChangePercent >= 0 ? '#3AE374' : '#FF4E4E';
     priceDOM.style.color = color;
     changeDOM.style.color = color;
+
   } catch (err) {
-    console.error("Binance WebSocket parse error:", err);
+    console.error('Errore parsing WS Binance:', err);
   }
 };
 
-binanceWS.onerror = (error) => {
-  console.error("Binance WebSocket error:", error);
+binanceWS.onerror = (err) => {
+  console.error('WebSocket Binance error:', err);
 };
 
 binanceWS.onclose = () => {
-  console.warn("Binance WebSocket chiuso.");
-  // Se vuoi, aggiungi un meccanismo di riconnessione
+  console.warn('WebSocket Binance chiuso. Puoi implementare la riconnessione se necessario.');
 };
 
 /*************************************************
-  2. WEBSOCKET PER BONE/USDT DA MEXC
+  POLLING PER BONE DA COINGECKO
 **************************************************/
-const wsMEXC = new WebSocket("wss://wbs.mexc.com/ws");
-
-wsMEXC.onopen = () => {
-  console.log("MEXC WebSocket aperto.");
-  // Sottoscrizione al ticker di BONE_USDT
-  const subMessage = {
-    op: "sub",
-    cmd: "spot/ticker",
-    args: ["BONE_USDT"],
-  };
-  wsMEXC.send(JSON.stringify(subMessage));
-};
-
-wsMEXC.onmessage = (event) => {
+async function fetchBonePrice() {
   try {
-    const msg = JSON.parse(event.data);
-    // Ci aspettiamo che msg.cmd === 'spot/ticker' e msg.data sia un array di array
-    if (msg && msg.cmd === "spot/ticker" && Array.isArray(msg.data) && msg.data.length > 0) {
-      const tickerData = msg.data[0];
-      // In base alla documentazione MEXC, tickerData ha l'ordine:
-      // [ symbol, lastPrice, open, high, low, volume, amount, ask1, ask1Qty, bid1, bid1Qty, time, changeRate, changePrice ]
-      const lastPrice = parseFloat(tickerData[1]);
-      // changeRate è in decimale, es. 0.02 => 2%
-      const changeRate = parseFloat(tickerData[12]) * 100;
+    // CoinGecko ID per BONE
+    const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bone-shibaswap&vs_currencies=usd&include_24hr_change=true';
+    const resp = await fetch(url);
+    const data = await resp.json();
 
-      const priceDOM = document.getElementById("bone-price");
-      const changeDOM = document.getElementById("bone-change");
+    if (data['bone-shibaswap']) {
+      const price = data['bone-shibaswap'].usd;
+      const change = data['bone-shibaswap'].usd_24h_change;
 
-      // Inseriamo prezzo con suffisso "USD" stilizzato
-      priceDOM.innerHTML =
-        lastPrice.toLocaleString("en-US", {
+      const priceDOM = document.getElementById('bone-price');
+      const changeDOM = document.getElementById('bone-change');
+
+      // Formattazione
+      const formattedPrice = currentPrice.toLocaleString('en-US', {
           minimumFractionDigits: 2,
-          maximumFractionDigits: 8,
-        }) + ' <span class="txtUSD">USD</span>';
+          maximumFractionDigits: 8
+        });
+        // Attenzione: .innerHTML permette di interpretare l’HTML
+        priceDOM.innerHTML = formattedPrice + ' <span class="txtUSD">USD</span>';
 
-      const sign = changeRate >= 0 ? "+" : "";
-      changeDOM.textContent = sign + changeRate.toFixed(2) + "%";
 
-      const color = changeRate >= 0 ? "#3AE374" : "#FF4E4E";
+      const sign = change >= 0 ? '+' : '';
+      const color = change >= 0 ? '#3AE374' : '#FF4E4E';
+      changeDOM.textContent = sign + change.toFixed(2) + '%';
       priceDOM.style.color = color;
       changeDOM.style.color = color;
     }
-  } catch (err) {
-    console.error("MEXC WebSocket parse error:", err);
+  } catch (error) {
+    console.error('Errore fetch prezzo BONE:', error);
   }
-};
+}
 
-wsMEXC.onerror = (error) => {
-  console.error("MEXC WebSocket error:", error);
-};
-
-wsMEXC.onclose = () => {
-  console.warn("MEXC WebSocket chiuso.");
-  // Se vuoi, aggiungi un meccanismo di riconnessione
-};
+// Aggiorno BONE a intervalli regolari (es. ogni 5 secondi)
+fetchBonePrice();
+setInterval(fetchBonePrice, 5000);
