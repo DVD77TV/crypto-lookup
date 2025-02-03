@@ -100,6 +100,6 @@ async function fetchBonePrice() {
   }
 }
 
-// Aggiorno BONE a intervalli regolari (es. ogni 5 secondi)
+// Aggiorno BONE a intervalli regolari (es. ogni 30 secondi)
 fetchBonePrice();
-setInterval(fetchBonePrice, 5000);
+setInterval(fetchBonePrice, 30000);
