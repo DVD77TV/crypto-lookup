@@ -58,7 +58,7 @@ h1 {
   margin-top: 5px;
 }
 .txtUSD {
-  font-size: 0.8em; /* più piccolo rispetto al prezzo */
+  font-size: 0.5em; /* più piccolo rispetto al prezzo */
   color: #f5f5f5;   /* oppure #999, #ccc, ecc. */
   opacity: 0.8;     /* se vuoi un effetto leggermente attenuato */
 }
